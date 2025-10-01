@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário de Solução - Fase II (Geral)</title>
+    <!-- CORREÇÃO iOS: Garante a escala correta e previne desfiguração no WebKit/iOS -->
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="mobile-web-app-capable" content="yes">
+    <!-- Carregar Tailwind CSS para estilização moderna e responsiva -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Estilos corporativos */
+        :root {
+            --color-primary: #1e3a8a; /* Azul escuro corporativo */
+            --color-secondary: #fcd3d4; /* Amarelo/Dourado */
+            --color-danger: #dc2626; /* Vermelho para problemas */
+            --color-success: #10b981; /* Verde para envio */
+            --color-save: #6366f1; /* Roxo suave para salvar */
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            padding-bottom: 2rem; /* Remove padding de barra antiga */
+        }
+        .header-bg {
+            background: linear-gradient(90deg, #1e3a8a 0%, #172554 100%); /* Gradiente Azul */
+        }
+        .intro-box {
+            border-left: 4px solid var(--color-primary);
+        }
+
+        /* Estilos para Acordeão */
+        .accordion-item {
+            border: 1px solid #e5e7eb;
+            transition: all 0.3s ease-in-out;
+            cursor: pointer;
+        }
+        .accordion-header {
+            padding: 1rem 1.5rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            user-select: none;
+            background-color: #ffffff;
+        }
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease-out;
+            background-color: #f9fafb;
+        }
+        .accordion-content-inner {
+            padding: 1.5rem;
+            padding-top: 0;
+        }
+        .icon-rotate {
+            transition: transform 0.3s ease-in-out;
+        }
+        .item-active .icon-rotate {
+            transform: rotate(180deg);
+        }
+
+        /* Estilos para Impressão/PDF (Otimização) */
+        @media print {
+            .no-print {
+                display: none !important;
+            }
+            body {
+                background-color: white;
+            }
+            .page-break {
+                page-break-before: always;
+            }
+            .header-bg {
+                background: #1e3a8a !important; /* Cor sólida para impressão */
+                -webkit-print-color-adjust: exact;
+                color-adjust: exact;
+            }
+            textarea {
+                border: none !important;
+                resize: none !important;
+                min-height: 50px !important;
+                padding: 0 !important;
+                margin-top: 0.25rem;
+            }
+            .print-area {
+                width: 100%;
+                margin: 0;
+                box-shadow: none;
+            }
+            .accordion-item, .accordion-content, .accordion-header {
+                border: none !important;
+            }
+            .accordion-content-inner {
+                padding: 0;
+            }
+            .item-status {
+                display: none; /* Oculta a indicação de status na impressão */
+            }
+            /* Garantir que todos os campos estejam abertos na impressão */
+            .accordion-content {
+                max-height: none !important;
+                overflow: visible !important;
+            }
+        }
+        
+        /* ESTILOS FAB (Floating Action Buttons) - APENAS 3 BOTÕES */
+        #action-bar {
+            /* Fixado no canto inferior direito */
+            position: fixed;
+            bottom: 2rem;
+            right: 1.5rem;
+            
+            /* Layout vertical */
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 1000;
+        }
+        .fab-button {
+            /* Botão circular */
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+            transition: transform 0.2s, box-shadow 0.2s;
+            position: relative; /* Para a tooltip */
+        }
+        .fab-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.3);
+        }
+        .fab-icon {
+            width: 24px;
+            height: 24px;
+            color: white;
+        }
+        .fab-tooltip {
+            /* Tooltip escondida por padrão, visível no desktop */
+            position: absolute;
+            right: 64px; /* Afasta-se do botão */
+            background-color: #1f2937;
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 6px;
+            font-size: 0.8rem;
+            white-space: nowrap;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.2s;
+            /* Apenas no desktop */
+            display: none; 
+        }
+        .fab-button:hover .fab-tooltip {
+            opacity: 1;
+        }
+        @media (min-width: 640px) { /* Mostra tooltips em telas maiores */
+            .fab-tooltip {
+                display: block; 
+            }
+        }
+    </style>
+</head>
+<body class="text-gray-800">
+
+    <!-- Barra de Ações Fixa (FAB - no-print) -->
+    <div id="action-bar" class="no-print">
+        
+        <!-- 1. Download (Salvar/Baixar HTML) -->
+        <button onclick="saveAndDownload()" class="fab-button bg-indigo-600 hover:bg-indigo-700" style="background-color: var(--color-save);">
+            <svg class="fab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path></svg>
+            <span class="fab-tooltip">Download (Salvar/Continuar)</span>
+        </button>
+
+        <!-- 2. Imprimir (Exportar PDF) -->
+        <button onclick="window.print()" class="fab-button bg-gray-700 hover:bg-gray-800">
+            <svg class="fab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2v5H5v-5h2M12 10V3M15 7l-3-3-3 3"></path></svg>
+            <span class="fab-tooltip">Imprimir (Exportar PDF)</span>
+        </button>
+
+        <!-- 3. Enviar por E-mail -->
+        <button onclick="sendDataByEmail()" class="fab-button bg-green-600 hover:bg-green-700" style="background-color: var(--color-success);">
+            <svg class="fab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"></path></svg>
+            <span class="fab-tooltip">Enviar por E-mail</span>
+        </button>
+    </div>
+
+    <!-- Container Principal do Formulário -->
+    <div class="max-w-4xl mx-auto p-4 sm:p-6 lg:p-8 print-area">
+        <!-- Cabeçalho Melhorado -->
+        <header class="header-bg text-white p-6 rounded-t-xl shadow-lg">
+            <div class="flex items-start justify-between">
+                <div>
+                    <div class="flex items-center space-x-3 mb-1">
+                        <!-- Ícone de Documento/Gestão -->
+                        <svg class="w-8 h-8 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        <h1 class="text-3xl font-extrabold tracking-tight">Formulário de Solução - Fase II</h1>
+                    </div>
+                    <p class="text-sm font-medium text-gray-300 ml-11">Diagnóstico de Vulnerabilidades e Propostas de Ação</p>
+                </div>
+            </div>
+            
+            <div class="mt-4 pt-3 border-t border-white/20">
+                
+                <!-- SELETOR DE SECTOR -->
+                <label for="sector-select" class="block text-sm font-medium text-gray-300 mb-2">Selecione o seu Sector:</label>
+                <div class="relative">
+                    <select id="sector-select" onchange="changeSector()" class="w-full bg-white text-gray-800 text-lg font-bold rounded-md px-4 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-yellow-400 print:hidden">
+                        <option value="" disabled selected>--- Selecione um Sector ---</option>
+                        <!-- Opções preenchidas por JS -->
+                    </select>
+                    <svg class="absolute right-3 top-3.5 h-5 w-5 text-gray-600 pointer-events-none" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </div>
+                
+                <!-- INFORMAÇÕES DO SECTOR SELECIONADO -->
+                <div id="sector-info" class="mt-4 hidden">
+                    <p class="text-lg font-semibold">Sector: <span class="font-bold" id="current-sector-name"></span></p>
+                    <p class="text-sm mt-1 text-gray-300">Gestor Responsável: 
+                        <input type="text" id="gestorName" value="" class="bg-white/10 border border-white/30 text-white text-sm rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-white print:border-none print:bg-transparent" readonly>
+                    </p>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mensagem de Status -->
+        <div id="status-message" class="no-print fixed top-0 left-0 right-0 bg-yellow-100 border-b-4 border-yellow-500 text-yellow-700 p-4 text-center hidden">
+            <p class="font-bold">Modo de Visualização/Impressão Ativo.</p>
+            <p class="text-sm">Este formulário está pré-preenchido com dados importados e desabilitado para edição. Use o botão "Imprimir" para exportar.</p>
+        </div>
+        
+        <!-- Conteúdo Principal -->
+        <main class="bg-white p-6 rounded-b-xl shadow-lg mb-8">
+            <div id="main-form-content" class="hidden">
+                
+                <!-- Nota Introdutória do Gestor -->
+                <div class="mb-8">
+                    <h2 class="text-2xl font-semibold mb-3 text-gray-700 border-b pb-2">Nota Introdutória do Gestor</h2>
+                    <div class="intro-box bg-blue-50 p-4 rounded-lg">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">Espaço para Análise e Contribuição:</p>
+                        <textarea id="introNote" rows="4" class="w-full p-2 border border-blue-200 rounded-md focus:ring-blue-500 focus:border-blue-500 print:border-none print:resize-none" placeholder="Escreva a sua nota introdutória aqui, abordando a visão geral das vulnerabilidades e o plano de ação proposto."></textarea>
+                    </div>
+                </div>
+
+                <!-- Formulário de Vulnerabilidades -->
+                <form id="solutionForm">
+                    <div class="space-y-4">
+                        <!-- Secção 1: Problemas do Sector (VULNERABILIDADES) -->
+                        <h2 class="text-2xl font-semibold mt-6 mb-4 text-gray-700 border-b pb-2 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
+                            <span class="mb-1 sm:mb-0">Vulnerabilidades do Seu Sector</span> 
+                            <span class="text-sm text-gray-500 font-normal mt-1 sm:mt-0" id="vul-gestor-name"></span>
+                        </h2 >
+
+                        <div id="vulnerabilitiesSection" class="space-y-2">
+                            <!-- Os itens do acordeão serão gerados aqui -->
+                        </div>
+                    
+                        <!-- Secção 2: Anotações de Outros Gestores -->
+                        <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-700 border-b pb-2 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
+                            <span class="mb-1 sm:mb-0">Anotações de Outros Gestores</span> 
+                            <span class="text-sm text-gray-500 font-normal mt-1 sm:mt-0" id="other-gestor-names"></span>
+                        </h2 >
+
+                        <div id="otherGestoresSection" class="space-y-2">
+                            <!-- Os itens do acordeão serão gerados aqui -->
+                        </div>
+
+                        <!-- Secção 3: Notas Críticas da Direção Geral -->
+                        <h2 class="text-2xl font-semibold mt-8 mb-4 text-gray-700 border-b pb-2 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
+                            <span class="mb-1 sm:mb-0">Notas Críticas da Direção Geral</span>
+                            <span class="text-sm text-gray-500 font-normal mt-1 sm:mt-0" id="dg-gestor-name"></span>
+                        </h2>
+
+                        <div id="dgNotesSection" class="space-y-2">
+                            <!-- Os itens do acordeão serão gerados aqui -->
+                        </div>
+                    </div>
+                </form>
+            </div>
+            <div id="initial-message" class="p-6 text-center text-gray-500">
+                <p class="text-xl font-semibold">Por favor, selecione o seu sector para carregar o formulário correspondente.</p>
+            </div>
+            
+        </main>
+        
+        <!-- Mensagem de Confirmação (para Salvar/Continuar) -->
+        <div id="save-confirmation" class="no-print fixed bottom-20 right-4 p-4 bg-green-500 text-white rounded-lg shadow-xl hidden transition-all duration-300 ease-in-out z-50">
+            <p class="font-bold">Progresso Salvo!</p>
+            <p class="text-sm">Pode fechar e continuar mais tarde no mesmo dispositivo.</p>
+        </div>
+    </div>
+
+    <script>
+        // --- DADOS CONSOLIDADOS DE TODOS OS SECTORES ---
+        const ALL_SECTOR_DATA = {
+            "ADMINISTRATIVO": {
+                gestor: "Mário Almeida",
+                storageKey: 'administrativo_solutions_data',
+                icon: "M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z",
+                vulnerabilities: [
+                    "Gestão de arquivo geral de correspondência",
+                    "Gestão e controlo do ficheiro geral de pessoal",
+                    "Centralizar gestão e controlo de meios de transportes",
+                    "Atribuir autonomia administrativa e financeira",
+                    "Recrutamento e seleção de candidatos a emprego deve ser profissionalizado",
+                    "Por proposta da direção administrativa vai apresentar informação",
+                    "Necessidade urgente para implementação dos regulamentos",
+                    "Pertinência de cada gerente apresentar relatórios periódicos",
+                    "A definição urgente de procedimentos",
+                    "A falta de cultura de análise e discussão"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Nasser Ibraimo", problemas: ["Depósito excessivo de confiança por grau de parentesco ou patricidade pode criar fragilidades e relaxamento dando oportunidades para esquemas de roubos ou perdas para empresa"] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NA DIRECAO ADMINISTRATIVA SA OS SEGUINTE:",
+                    "Oficina de Mecânica-ausência de plano de gestão e controle, que evite o roubo sistemático de peças, assim como a compra de peças de baixa qualidade, assim como a permanencia de trabalhadores com antecedentes de roubo, falta de sistema de controle na gestão de oleo, Grase, liquido de frios, pneus, baterias.",
+                    "Sector de segurança: Falta de politicas claras de Gestao e controle sobre a equipe, uma vez que todos os roubos praticados nas empresas estao envolvidos homem da segurança.",
+                    "Transporte: falta de Monitoria e controle sobre a nossa frota uma vez que todos os roubos acontecem com viaturas da empresa. roubo de combustivel, uma practica antiga sim uma politica clara de gestao e controle para mitigar e desncouragar esta practica"
+                ]
+            },
+            "ARMAZÉM 1": {
+                gestor: "Arif Daligy",
+                storageKey: 'armazem1_solutions_data',
+                icon: "M20 7V5a2 2 0 00-2-2H6a2 2 0 00-2 2v2m16 0h-3m3 0H4m0 0H1a1 1 0 00-1 1v12a2 2 0 002 2h18a2 2 0 002-2V8a1 1 0 00-1-1H4z",
+                vulnerabilities: [
+                    "Ausência do chefe do sector",
+                    "Circulação livre do auxiliar no sector",
+                    "Entrega de produtos sem controlo adequado",
+                    "Local onde guardam-se as chaves (mesa do Sr. Nasser) é um lugar de livre acesso",
+                    "Requisições sem controlo rigoroso",
+                    "Entrada e saída de produtos sem registo adequado",
+                    "Falta de entrega de produtos na totalidade",
+                    "Receção de transferências do Armazém 15 sem conferência",
+                    "Falta de feedback da área de produção dos produtos recebidos",
+                    "Falta de controlo dos chefes de armazém nas entregas",
+                    "Falta de controlo de entrega de produtos em eventos noturnos",
+                    "Falta de registo de devoluções de produtos dos eventos",
+                    "Entrega de produtos sem informação de cancelamento",
+                    "Falta de devolução de produtos de cancelamentos e trocas"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Yadirka Bolano", problemas: [
+                        "Falta de entrega de produtos na totalidade",
+                        "Receção de transferências de produtos do Armazém 15 sem conferência",
+                        "Entrega de produtos de 3000 sem conferência",
+                        "Falta de feedback por parte da área de produção dos produtos recebidos de madrugada fundamentalmente arroz e óleo",
+                    ] },
+                    { gestor: "Juana Polaco", problemas: [
+                        "Falta de controle dos chefes de armazém nas entregas de TW sendo possível entregar a mais"
+                    ] },
+                    { gestor: "Amélia Txeco", problemas: [
+                        "Falta de controle de entrega de produtos em eventos noturnos",
+                        "Falta de registo de devoluções de produtos dos eventos",
+                        "Entrega de produtos a operações e lanches sem informação de cancelamento",
+                        "Falta de devolução de produtos, carnes fundamentalmente de cancelamentos e trocas",
+                        "Falta de devolução de carnes quando restam na preparação provocando a deteriorização",
+                        "Produtos são entregues sem avaliação e sem verificação de quantidades"
+                    ] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO ARMAZEM 1 SAO OS SEGUINTE:",
+                    "Falta de controle e procedimentos no acto de recepcao de productos(deixa espaco para Roubos)",
+                    "Falta de controle riguroso no acto de entrega de producto (deixa espaco para roubo)",
+                    "Falta de horario de fucionamento do Armazem 1 que permita planificar o tempo que permita fazer contagem diaria de inventario e comparar com o sistema.",
+                    "circulacao de pessoas nao autorizadas no armazem 1 (facilita Roubo)",
+                    "assinatura de guias de saida do fiel de armazem assim como da pessoa que recebe o producto poderia limitar a duplicacao de entrega de productos",
+                    "Controle de basilhame inexistente, e procedimento fundamental para controla os roubos",
+                    "Falta de comprometimento do encarregado na Preveencao e combate aos roubos"
+                ]
+            },
+            "ARMAZÉM 15": {
+                gestor: "Anastácio",
+                storageKey: 'armazem15_solutions_data',
+                icon: "M20 7V5a2 2 0 00-2-2H6a2 2 0 00-2 2v2m16 0h-3m3 0H4m0 0H1a1 1 0 00-1 1v12a2 2 0 002 2h18a2 2 0 002-2V8a1 1 0 00-1-1H4z",
+                vulnerabilities: [
+                    "No passado, no interior do armazém havia circulação de muitos colegas no momento da levantamento dos produtos; Para reduzir os furtos e desvio, quando comecei a trabalhar no armazém 15, optei que fosse o armazém a fazer a entrega dos produtos;",
+                    "Estou a pedir a quem de direito para rever acerca do aumento de efetivo;",
+                    "E quando se fecha o armazém, tem que ter um lugar seguro para deixar os remotes;",
+                    "Também tem que se ver a questão de aumento salarial"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Yadirka Bolano", problemas: [
+                        "Transferências não concluídas de produtos",
+                        "Falta de entrega de produtos na totalidade",
+                        "Receção de mercadoria acima do consumo semanal previsto",
+                        "Requisições com quantidades insuficientes ou excessivas",
+                        "Devoluções de produtos detectados em despacho e não são registadas no Odoo",
+                        "Falta de informação de receção de mercadorias nos relatórios"
+                    ] },
+                    { gestor: "Juana Polaco", problemas: [
+                        "Entrega de produtos sem avaliação e sem verificação de quantidades",
+                        "Não há revisão se tem produtos ous não e nem se quer controlam as quantidades (camaras frigoríficas e cozinha) e o colaborador tem a liberdade de roubar produtos sem se quer serem descobertos",
+                        "Controle desequilibrado. Não seguem o que vem na requisição e tiram quantidades a mais."
+                    ] },
+                    { gestor: "Tomás Mucavela", problemas: [
+                        "Falta de controlo rigoroso do equipamento do armazém;",
+                        "Falta de controlo rigoroso dos produtos solicitados"
+                    ] },
+                    { gestor: "Amélia Txeco", problemas: [
+                        "Falta de boa coordenação entre cozinha, comprador e armazém e finanças;"
+                    ] }
+                ],
+                dgNotes: [] // Nenhuma anotação do Sr. Rafael Jimenez para este sector.
+            },
+            "ARM. EQUIP.": {
+                gestor: "Míria Capella",
+                storageKey: 'armequip_solutions_data',
+                icon: "M4 7v10M19 7v10M5 11h14M5 15h14M12 4v16m0-12h.01M12 16h.01",
+                vulnerabilities: [
+                    "Falta de funcionários claramente responsáveis pelo controlo do material;",
+                    "Mau controle na saída e entrada de pessoas no armazém;",
+                    "Várias pessoas têm acesso ao mesmo tempo no armazém sem supervisão;",
+                    "Materiais são emprestados sem autorização formal;",
+                    "Locais escuros e pontos cegos;",
+                    "Saída de materiais sem a devida requisição aprovada pelo responsável;",
+                    "O material que saiu não volta na data certa e não tem seguimento pela administração então quando o material volta está estragado e não tem nenhuma consequência para o responsável"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Juana Polaco", problemas: [
+                        "Entrega de produtos sem avaliação e sem verificação de quantidades",
+                        "Não há revisão se tem produtos ous não e nem se quer controlam as quantidades (camaras frigoríficas e cozinha) e o colaborador tem a liberdade de roubar produtos sem se quer serem descobertos"
+                    ] },
+                    { gestor: "Tomás Mucavela", problemas: [
+                        "Falta de controlo rigoroso do equipamento do armazém;",
+                        "Falta de controlo rigoroso dos produtos solicitados"
+                    ] },
+                    { gestor: "Amélia Txeco", problemas: [
+                        "Falta de boa coordenação entre cozinha, comprador e armazém e finanças;"
+                    ] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO ARMAZEM DE EQUIPAMENTO SAO OS SEGUINTE:",
+                    "Falta de contagem periodica de Inventario. (facilita o Roubo)",
+                    "excesso de circulacao de pessoas nao autorizadas.",
+                    "Falta de controle na devolucao de Material, falta de controle no prazo de devolucao, ficando no esquecimento as guias pendentes",
+                    "Falta de logo no nosso equipamento para que o equipamento alugado seja sempre devolvido o mesmo.",
+                    "Fidelizar a equipe (precisamos uma equipe confiavel)"
+                ]
+            },
+            "ARM. TENDAS": {
+                gestor: "Aparício Sique",
+                storageKey: 'armtendas_solutions_data',
+                icon: "M3 12l2-2m0 0l7-7 7 7m-1 1h4a2 2 0 012 2v3a2 2 0 01-2 2H5a2 2 0 01-2-2v-3a2 2 0 012-2h14",
+                vulnerabilities: [
+                    "Eu, Aparício Sique, declaro que após análise e diagnóstico efetuado no sector das Tendas, não foram registados até à presente data casos de furtos ou desvios de materiais, estruturas ou acessórios.",
+                    "Apesar da inexistência de problemas causados por pessoas gananciosas e com falta de escrúpulos, reconhece-se a necessidade de se aumentar o controlo de segurança;",
+                    "Peço para se reforçar as câmaras de segurança, uma no segundo portão na parte externa e outra na parte interna do armazém;",
+                    "Peço um cadeado com sistema de alarme;",
+                    "Reforçar as grades nas janelas da parte frontal e eliminação de janelas da parte traseira;",
+                    "Criação de um lugar seguro para deixar-se as chaves do armazém (tendas, eventos), onde ficam acessíveis a qualquer pessoa;"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "Falta de contagem periodica de Inventario. (facilita o Roubo)",
+                    "Falta de controle na devolucao de Material, falta de controle no prazo de devolucao, ficando no esquecimento as guias pendentes",
+                    "Falta de logo no nosso equipamento para que o equipamento alugado seja sempre devolvido o mesmo.",
+                    "Falta de comprometimento do encarregado na Preveencao e combate aos roubos"
+                ] 
+            },
+            "COBRANÇA": {
+                gestor: "Júlia Bramo",
+                storageKey: 'cobranca_solutions_data',
+                icon: "M12 8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3zM4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z",
+                vulnerabilities: [
+                    "Sector declarou não ter vulnerabilidades identificadas (alegação de inexistência de problemas)"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [] // Nenhuma anotação do Sr. Rafael Jimenez para este sector.
+            },
+            "COMERCIAL": {
+                gestor: "Adélia Cossa Palate / Ângelo Jerónimo",
+                storageKey: 'comercial_solutions_data',
+                icon: "M17 20h-10c-1.1 0-2-.9-2-2v-12c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2zM12 6.5l4 3-4 3V6.5z",
+                vulnerabilities: [
+                    "Registos de pedidos e encomendas no CRM nem sempre passam por dupla verificação",
+                    "Comunicação pouco eficaz entre Comercial, Produção e Operações sobre alterações de quantidades, cancelamentos e prazos",
+                    "Entregas efetuadas sem documentação devidamente anexada ou com registos incompletos",
+                    "Falta de rastreabilidade imediata em alguns processos de saída de serviços e produtos",
+                    "Registos de contactos e follow-ups com clientes por vezes não atualizados no CRM",
+                    "Nenhuma vulnerabilidade identificada (alegação de inexistência de problemas por Ângelo Jerónimo)"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR COMERCIAL SAO OS SEGUINTE:",
+                    "Receber dinhero no sector comercial deve ser prohibido",
+                    "Receber Mpesa em numeros for a dos numeros da empresa",
+                    "conivencia entre clientes e colaboradores do sector comercial",
+                    "despecas com eventos nao tranparentes assim como pagos a eventuais",
+                    "falta de uso do Odoo toda a vida comercial da empresa deve ser registrada em odoo",
+                    "politica de preco deve ser transparente e aberta para todo termos acesso",
+                    "assunto de alugueres deve ser mais transparente e deve ser facturado em Odoo",
+                    "falta de Comprometimento da Gerente e da Adjunta da area na preveencao e cobate aos roubos."
+                ]
+            },
+            "COMPRAS": {
+                gestor: "Zoa Suarez",
+                storageKey: 'compras_solutions_data',
+                icon: "M19 8h-14c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2zM19 14h-14c-1.1 0-2-.9-2-2v-2c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2zM19 20h-14c-1.1 0-2-.9-2-2v-2c0-1.1.9-2 2-2h14c1.1 0 2 .9 2 2v2c0 1.1-.9 2-2 2z",
+                vulnerabilities: [
+                    "Procedimentos ineficientes",
+                    "Depositar Confiança nas Pessoas que Supervisionamos",
+                    "Falta de separação de funções",
+                    "Supervisão e Controlo inadequado",
+                    "Falta de Planos para Compras",
+                    "Fraqueza na Segurança dos Armazéns e de Chaves",
+                    "Pessoas sem responsabilidade e sem formação",
+                    "Negligência Pessoal",
+                    "Falta de fecho mensal conjunto",
+                    "Compras acima dos consumos semanais sem justificação",
+                    "Ausência de análise histórica de pedidos e comportamento de gastos",
+                    "Falta de comunicação vertical entre produção e compras"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR COMPRAS SAO OS SEGUINTE:",
+                    "Falta clara de uma politica de compras e de processos obrigatorio bem definidos",
+                    "Fata de um procurement constante a procura de melhores precos",
+                    "Exesso de confianca nos agentes e gestores de compras",
+                    "Conivencia entre fornecedores e os nosos gestores de compras e armazenistas",
+                    "Cobracas de comicoes a fornecedores por parte de agentes de compras.",
+                    "Cobrancas de comicoes a fornecedores por oarte de gestores financieros",
+                    "pois esas comicoes sao roubos bancados pela empresa"
+                ]
+            },
+            "CONTROLADORIA": {
+                gestor: "Ludovina Chivete",
+                storageKey: 'controladoria_solutions_data',
+                icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 20c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8zM13 7h-2v6h4v-2h-2V7z",
+                vulnerabilities: [
+                    "Qualquer funcionário entra no armazém e manipula produtos sem supervisão",
+                    "Excesso de sobras dos eventos não controladas",
+                    "Falta de inventário diário ou semanal",
+                    "Inventário manual desatualizado",
+                    "Rotas sem monitoramento GPS",
+                    "Mais de uma pessoa possui acesso às câmaras frigoríficas",
+                    "Falta de auditorias frequentes nos armazéns",
+                    "Não rotatividade dos funcionários que recebem mercadoria",
+                    "Falta de sistema digital para controlo do stock",
+                    "Não organização da mercadoria em categorias e com base nos prazos de validade; ou seja, os produtos são empilhados sem nenhuma ordem o que possibilita um controle deficiente",
+                    "Tolerância aos pequenos furtos;",
+                    "Falta de formação contínua sobre boas práticas e ética;",
+                    "Falta de um canal anónimo para denúncias (linha verde);",
+                    "Falta de definição clara de responsáveis por cada sector;",
+                    "Falta de segregação de funções (quem aprova não é quem executa), ou seja que recebe a mercadoria não pode ser a mesma que faz o inventário.",
+                    "Falta de monitorização contínua, como a realização de relatórios periódicos por cada sector."
+                ],
+                otherGestoresNotes: [],
+                dgNotes: []
+            },
+            "COZINHA": {
+                gestor: "Ornela Bila / Criseida De Los Santos",
+                storageKey: 'cozinha_solutions_data',
+                icon: "M18 3H6c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM6 19l2-2h8l2 2H6zM10 9h4c.55 0 1 .45 1 1s-.45 1-1 1h-4c-.55 0-1-.45-1-1s.45-1 1-1z",
+                vulnerabilities: [
+                    "Inventário e registos insuficientes (inexistência de um sistema que registe diariamente a entrada e saída de produtos)",
+                    "Armazenamento vulnerável: produtos ficam em locais de fácil acesso, sem restrição adequada a itens de maior valor (carne, peixe, óleo, bebidas).",
+                    "Falta de cruzamento de consumos: inexistência de confronto entre consumo real e número de refeições servidas.",
+                    "Ausência de vigilância estruturada: inexistem câmaras de segurança e rondas-surpresa regulares",
+                    "Regras de conduta pouco claras: não há regulamento interno específico sobre responsabilidades da equipa.",
+                    "Baixa motivação e responsabilização: falta de sistema de incentivos que promova ética, responsabilidade e espírito de compromisso de todos",
+                    "Rotatividade limitada: algumas funções críticas ficam concentradas sempre nos mesmos colaboradores",
+                    "Falta de controlo nos diferentes sectores da empresa",
+                    "Ausência de cumprimento rigoroso dos procedimentos, segurança e padrões de gestão",
+                    "Acesso à empresa em horas não laboráveis sem limitação clara",
+                    "Trabalhadores a actuar fora do horário normal sem registo ou autorização formal",
+                    "Saídas de mercadoria fora de horas sem notificação ou supervisão adequada",
+                    "Acesso às chaves dos armazéns e refrigeradores sem segurança suficiente",
+                    "Uso de equipamentos de transporte fora do horário laboral sem autorização",
+                    "Motoristas com acesso aos veículos após o término do trabalho",
+                    "Equipamentos e veículos de transporte de mercadorias em locais inseguros e sem controlo",
+                    "Camião de lixo não supervisionado, possibilitando saída de produtos como se fossem resíduos",
+                    "Falta de rotatividade na segurança da porta, gerando vulnerabilidade",
+                    "Falta de rotatividade e supervisão nas câmaras de vigilância",
+                    "Segurança informática pouco eficiente",
+                    "Falta de cumprimento e respeito consistente pelos procedimentos estabelecidos",
+                    "Falta de responsabilização clara dos gerentes em relação às suas áreas",
+                    "Possibilidade de empregados (incluindo superiores) alterarem procedimentos sem nenhum alinhamento."
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR COZINHA SAO OS SEGUINTE:",
+                    "Falta de controle de basilhames de todos os productos fornecidos a cozinha, o que fasilita os roubos constante de productos.",
+                    "Falta de integridade de alguns colegas com actitude desviante",
+                    "falta de Determinacao da gerente de producao para devocao obrigatoria de basilhames",
+                    "falta de controle na comida confecionada para o Cliente e acaba sendo consumida por colegas bem relacionados",
+                    "falta de Comprometimento da Gerente e da Adjunta da area na preveencao e cobate aos roubos."
+                ]
+            },
+            "DESPACHO": {
+                gestor: "Célia Mandlaze",
+                storageKey: 'despacho_solutions_data',
+                icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM15 11h-2V7h-2v4H9l3 3 3-3z",
+                vulnerabilities: [
+                    "Falta de controlo de takeaways que saem do armazém para sala.",
+                    "Falta de contabilização de takeaways na sala, antes de se começar a servir",
+                    "Falta de contabilização geral de takeaways comprados e cruzamento com as quantidades utilizadas cada mês",
+                    "Falta de chefes engajados e profissionais no sector."
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Amélia Txeco", problemas: [
+                        "Problemas com guias de remessa;",
+                        "Falta do cumprimento das regras para a entrega dos takeways;",
+                        "Não cumprem com rigor a entrega de refeições mediante assinatura de guias de remessa;",
+                        "Guias não devidamente assinadas;"
+                    ] },
+                    { gestor: "Juana Polaco", problemas: [
+                        "Falta de controle a 100% na contagem de takeaways solicitados e nem da comida pronta que colocam nos colmans para entrega."
+                    ] },
+                    { gestor: "Yadirka Bolano", problemas: [
+                        "Os pedidos de acréscimos não justificados",
+                        "Produtos restantes do almoço não apresentados a tempo;",
+                        "Ausência de responsável para consolidar informações por mesa que consiga dar informação do TW servido em um determinado tempo, provocando uma estimação para pedidos de acréscimos se documentação"
+                    ] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR DESPACHO SAO OS SEGUINTE:",
+                    "Falta clara de procedimentos como planificacion, gestion, analisis, controle",
+                    "Ausencia de um programa de mitigacao de roubos face a alta expocisao do sector",
+                    "Ausencia de encarregados capaces de controlar efectivamente os roubos",
+                    "Falta de controle nos TW, pois sofremos roubos sistematicos",
+                    "Conivencia entre motoristas e serventes para o Roubo de TW",
+                    "Conivencia entre Motorista e armazem para o roubo de outros productos",
+                    "Falta de controle no portao principal da Saida"
+                ]
+            },
+            // INÍCIO DO SETOR FINANCEIRO CORRIGIDO
+            "FINANCEIRO": {
+                gestor: "Amélia Txeco",
+                storageKey: 'financeiro_solutions_data',
+                icon: "M20 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V6c0-1.1-.9-2-2-2zM4 18V6h16v12H4zM10 15h4v-2h-4v2zM10 11h4V9h-4v2z",
+                // 1. VULNERABILIDADES DO SECTOR (Amélia Txeco) - Baseado no Financeiro.html
+                vulnerabilities: [
+                    "Entrada de colegas com intenções malignas que exploram fragilidades internas para criar desmandos;",
+                    "Aprovação de requisições sem programação adequada;",
+                    "Falta de documentação nas requisições de compras;",
+                    "Aprovação e liberação de fundos sem tempo para avaliação criteriosa;",
+                    "Pagamentos de valores elevados sem mecanismos de rastreabilidade;",
+                    "Produtos retirados sem controlo efetivo;",
+                    "Ausência de registos e reclamações sobre a falta de produtos roubados;",
+                    "Irregularidades que resultam em desfalque no cofre da empresa;",
+                    "Falta de responsabilidade dos fiéis de armazém;",
+                    "Falta de clareza no controlo de mercadorias;",
+                    "Falta de domínio dos produtos existentes no armazém;",
+                    "Falta de boa coordenação entre cozinha, comprador e armazém e finanças;",
+                    "Problemas com guias de remessa;",
+                    "Não cumprem com rigor a entrega de refeições mediante assinatura de guias de remessa;",
+                    "Falta de controlo permanente nas câmaras frigoríficas;",
+                    "Falta de elaboração de relatórios diários, semanais;"
+                ],
+                // 2. ANOTAÇÕES DE OUTROS GESTORES (Yadirka Bolano) - Baseado no Financeiro.html
+                otherGestoresNotes: [
+                    { gestor: "Yadirka Bolano", problemas: [
+                        "Não há análise de gastos periódica (semanal/mensal) para alertar desvios;",
+                        "Ausência de relatórios de inventário como apoio à gestão de produtos",
+                        "Ausência de análise histórica de pedidos e comportamento de gastos"
+                    ] }
+                ],
+                // 3. NOTAS CRÍTICAS DA DG (Rafael Jimenez e Grinni Hernadez) - Baseado no Financeiro.html
+                dgNotes: [
+                    // Pontos de Rafael Jimenez (Cobranca de comicoes, Ausencia de procedimentos...)
+                    "Cobranca de comicoes por gestores financieros a determinados fornecedores de roubos",
+                    "Ausencia de procedimentos financieros que obriguem o Dto de compras a ser mas eficiente e reforcar os controles",
+                    "Falta de elementos de controlen que ajudem a mitigacao do roubo de combustivel",
+                    "Falta de comprometimento do gerente na Preveencao e combate aos roubos",
+                    // Pontos de Grinni Hernadez (Processamento de salarios, Falta de integração, etc.)
+                    "Ausência na fiscalização e monitorização processamento de salarios a ex trabalhadores.",
+                    "Falta de integração entre os sectores.",
+                    "Ausência de análises de custos.",
+                    "Ausência de cruzamentos de informações (Compras, Consumo, Fornecimento, Facturacao).",
+                    "Ausência de cruzamento de informações na área de transporte, consumo combustível vs actividades e kilometros percorridos.",
+                    "Ausência no cruzamento de solicitações de clientes com o facturado, monitoramento dos contratos e o já atingido.",
+                    "Falta de rigorocidade no controle de fundo de ca",
+                    "Permitir pagamentos sem documentos de suporte ( ordem de compra autorizada, recepção de mercadorias com assinatura autorizada, factura )",
+                    "Inexistência de manuais de procedimentos financeiros claros.",
+                    "Não definição clara de limites de aprovação para compras, pagamentos ou adiantamentos, tanto em produtos, material de escritório, combustíveis.",
+                    "Inexistência de auditorias internas regulares.",
+                    "Falta de cruzamento entre dados financeiros e logísticos (entradas em armazém vs. pagamentos a fornecedores.",
+                    "A responsabilidade da direção financeira é garantir que existem regras, auditorias, segregação de funções e supervisão continua. Se esses mecanismos falham, cria-se espaço para que trabalhadores individuais criem oportunidades e explorem a fragilidade da empresa e cometam roubos."
+                ]
+            },
+            // FIM DO SETOR FINANCEIRO CORRIGIDO
+            "HIGIENE": {
+                gestor: "Juana Polaco",
+                storageKey: 'higiene_solutions_data',
+                icon: "M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z",
+                vulnerabilities: [
+                    "Entrega de produtos sem avaliação e sem verificação de quantidades.",
+                    "Não se faz revisão se tem produtos ou não e nem se quer controlam as quantidades (câmaras frigoríficas e cozinha) e o colaborador tem liberdade de roubar produtos e sem se quer serem descobertos",
+                    "Controle desequilibrado, não seguem o que vem na requisição e tiram quantidades a mais.",
+                    "Não faz controle do que se pediu, do que restou e não fazem devolução das coisas confeccionadas.",
+                    "O responsável do sector de recolha de vasilhame não faz correctamente (Rosa)",
+                    "Falta de controle a 100% na contagem de takeaways solicitados e nem da comida pronta que colocam nos colmans para entrega.",
+                    "O Sector com facilidade de desvio de produto, requisitam produto a mais e não fazem devolução tanto de comida pronta e não pronta.",
+                    "Requisitam produtos a mais e acumulam e não fazem controle.",
+                    "Vem carne para corte e não fazem controle do que se cortou, não fazem controle do que se temperou para confecção"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR HIGIENE SAO OS SEGUINTE:",
+                    "Falta de um plano claro de actividades diarias versus productos a serem usados, esto cria uma falta de controle pois so a gerente da area e capaz de calcular a quantidade a atribuir para cada sector, e fica imposivel de controlar na sua ausencia o que cria espaco para roubos.",
+                    "productos expostos for a do armacem e colocados si protecao em locais de alta circulacao, atraindo ate pessoas que nao tunham plano de roubar",
+                    "Ausencia de um mapa de consumo Diario/mensal que ajude a avalhar o consumo do mes e controlar os niveis de desvios para assim determinar si existe roubo na area ou nao",
+                    "falta de justificacao de vasilhames do sector da limpeca, pois este producto visa eliminar a posibilidade de colegas levanrem producto da empresa para ir vender la fora"
+                ]
+            },
+            "LOGISTICA": {
+                gestor: "Nasser Ibraimo",
+                storageKey: 'logistica_solutions_data',
+                icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM10 14h4v-4h-4v4z",
+                vulnerabilities: [
+                    "Falta de verificação de antecedentes, estado psicológico e idoneidade no acto de contratação de um trabalhador",
+                    "Falta de pessoas qualificadas e treinadas para um determinado trabalho",
+                    "Falta de motivação pode patrocinar esquemas de devios e roubos",
+                    "Falta de conferência sistemática de produtos",
+                    "Depósito excessivo de confiança por grau de parentesco ou patricidade pode criar fragilidades e relaxamento dando oportunidades para esquemas de roubos ou perdas para empresa",
+                    "Segurança deficiente das portas e portões",
+                    "Falta de sensores de alarme que detectam qualquer movimento estranho no portas principais do estabelecimento e dos armazéns",
+                    "Recepção de produtos sem um documento ou guia de entrega",
+                    "O processo de compra e pagamento deve ser descentralizado e ter vários intervenientes para que se evite possíveis esquemas que possam trazer danos e perdas a empresa"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR LOGISTICA SAO OS SEGUINTE:",
+                    "Falta de routina diaria de controle de Stoque e devido encruzamento com o odoo, para evitar os roubos sistematicos em todos os armazens da empresa",
+                    "falta de planificacion das necesidade diarias/semanal/mensal, que permita uma planificacao clara das necesidades de compras e da paso ao controle de compras/necesidade para evitar esquemas de roubos",
+                    "falta de um plano de descentralisacao de funcoes por parte de Gerente de Logistica pois ele concentra todo nas suas maos, precisa transparencia na gestao",
+                    "ausencia de procedimentos claros na area de recepcao de productos de compras assim procedimentos claros na entrega de productos, assim como a falta de supervisao de se esos procedimentos estejam sendo rigurosamente cumpridos.",
+                    "Falta de intrucao clara de que um armazem equipara com um banco, donde o dinhero so sai depois de cumprir todos os procedimentos, e que na hora de entrada sao muito cautelosos e virificam varias veces antes de lancar como recebido no sistema"
+                ]
+            },
+            "OPS": {
+                gestor: "Albano Júnior",
+                storageKey: 'ops_solutions_data',
+                icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM17 13h-4v4h-2v-4H7v-2h4V7h2v4h4v2z",
+                vulnerabilities: [
+                    "Não permissão de abertura de armazéns fora do horário laboral sem a presença de um superior",
+                    "Controle de guias para a saída de produtos",
+                    "Deve se contratar pessoas responsáveis que não que não olham para sua própria barriga",
+                    "Reajuste salarial para a motivação dos trabalhadores"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR ARMAZEM DA GOLD SAO OS SEGUINTE:",
+                    "Falta de routina diaria de controle de Stoque e devido encruzamento com o phc, para evitar os roubos sistematicos em todos os armazens da empresa",
+                    "falta de planificacion das necesidade diarias/semanal/mensal, que permita uma planificacao clara das necesidades de compras e da paso ao controle de compras/necesidade para evitar esquemas de roubos",
+                    "o Responsavel nao tem actitude de lideranca,",
+                    "ausencia de procedimentos claros na area de recepcao de productos de compras assim procedimentos claros na entrega de productos, assim como a falta de supervisao de se esos procedimentos estejam sendo rigurosamente cumpridos.",
+                    "Falta de intrucao clara de que um armazem equipara com um banco, donde o dinhero so sai depois de cumprir todos os procedimentos, e que na hora de entrada sao muito cautelosos e virificam varias veces antes de lancar como recebido no sistema",
+                    "Falta de comprometimento do encarregado na Preveencao e combate aos roubos"
+                ]
+            },
+            "OPS E DESPACHOS": {
+                gestor: "Tomás Mucavela",
+                storageKey: 'opsdespachos_solutions_data',
+                icon: "M10 20h4V4h-4v16zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2z",
+                vulnerabilities: [
+                    "Falta de responsabilidade rigorosa dos responsáveis dos sectores, juntamente com os restantes colegas;",
+                    "Não há clareza na contagem do material solicitado para trabalho, tais como eventos, centros, etc.;",
+                    "Falta de controlo rigoroso do equipamento do armazém;",
+                    "Falta de controlo rigoroso dos produtos solicitados;",
+                    "Falta de mão de obra qualificada – eventuais para atender às necessidades dos clientes da empresa;",
+                    "Falta de incentivo, de modo a evitar que o trabalhador tenha comportamento desviante;",
+                    "Contratação de trabalhadores com conduta duvidosa."
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR OPERACOES SAO OS SEGUINTE:",
+                    "Falta de rutina de controle sobre os eventos diariamente realizados, onde os retornos e devolucoes nao sao controlados e dando a oportunidades a colegas das operacoes beneficiarem de productos que deviam ser devolvidos.",
+                    "Falta de controle do Armazem central de equipamentos, nao sao controlado o estoque diariamente nem mensamente como deveria ser, o que abre grade espaco para roubos sistematicos e desaparecimento continuo de materiais",
+                    "Falta de resposabilicazao dos responsaveis dos evento relativo a loica do armazem que em todos os eventos voltam com loica partidas e faltante, que e otra forma de roubo.",
+                    "Permanencia de equipamentos nos camioes muitos dias depois de finalizar o evento, tambem abre uma janela para as practicas de roubo",
+                    "O dp operacoes deve desenhar uma politica clara de planificacao, getao, analisis , e controle nos eventos para evitar os roubos e prejico na empresa.",
+                    "Falta de comprometimento do gerente na Preveencao e combate aos roubos"
+                ]
+            },
+            "PATRIMÓNIO": {
+                gestor: "Vasco Mahumana",
+                storageKey: 'patrimonio_solutions_data',
+                icon: "M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zM12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6zM11 9H9v6h2v-6zM15 9h-2v6h2V9z",
+                vulnerabilities: [
+                    "No sector de património, não têm ocorrido situações de furtos, pois trabalhamos com matérias solicitadas e contabilizadas.",
+                    "Gostaria de propor que se tomasse um pouco de atenção à situação das datas do salário de segurança, pois eles recebem salário depois do pessoal receber. Isso tem deixado-os vulneráveis a qualquer situação."
+                ],
+                otherGestoresNotes: [],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR PATRIMONIO SAO OS SEGUINTE:",
+                    "Falta de controle nos acessos da empresa",
+                    "as chaves da empresa ficam expostas e todo mundo tem acesso, nao existe hirarquia para ter acesso as chaves, seja das intalacoes, armazems, viaturas, ate gabinetes de trabalho,",
+                    "os roubos acontecidos do meu ponto de vista sao da responsabilidade directa do Patrimonio",
+                    "Falta de um plano de gestao patrimonial que defina claramente os niveis de valor patrimonial, e consecuente mente os niveis de acesso, assim como horarios de acesso.",
+                    "Mais antes que nada existe a necesidade do encarregado do sector perceba o nivel de abrangencia dos seus trabalhos, niveis de responsbilidade que ele carrega, para assim podermos ter um plano funcional que garanta a protecao contra roubos do patrimonio da empresa",
+                    "Falta de comprometimento do encarregado na Preveencao e combate aos roubos"
+                ]
+            },
+            "RH": {
+                gestor: "Nilsa Cupula",
+                storageKey: 'rh_solutions_data',
+                icon: "M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z",
+                vulnerabilities: [
+                    "Baixa cultura de transparência, ética e responsabilidade entre colaboradores",
+                    "Altos factores de insatisfação, desmotivação ou desengajamento que estão a influenciar comportamentos de risco",
+                    "Insuficiência de treinamentos adequados sobre politicas internas, controle de inventário, ética e conduta no trabalho",
+                    "Falta de promoção de campanhas de sensibilização sobre as consequências dos furtos e desvios reforçando a importância do compromisso de todos",
+                    "Ineficácia no cumprimento dos processos de recrutamento para garantir a contratação de pessoas com perfil adequado e alinhado aos valores da empresa",
+                    "Falta de procedimentos de verificação de antecedentes e referências que possam ajudar na prevenção de riscos internos",
+                    "Défice de políticas internas de controlo de acesso, uso de recursos e procedimentos disciplinares",
+                    "Falta de canais de denúncia confidenciais e seguros para que os colaboradores possam reportar irregularidades sem medo de retaliações.",
+                    "Distribuição de turnos e horários inadequada",
+                    "Falta de definição clara entre turnos rotativos ou fixos;",
+                    "Falta de rotatividade ou de ajustes nos horários;",
+                    "Falta de checklists de supervisão formais para preenchimentos em turnos",
+                    "Falta de uso consistente da tecnologia (câmeras, dashboards operacionais, relatórios em tempo real)",
+                    "Carência de ajustes contínuos",
+                    "Ausência de uma cultura consolidada de melhoria contínua"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Jorge Ruiz", problemas: ["Falha no processo de ativação/desativação de acessos o RH não comunica atempadamente aos gestores do sistema (TI) as entradas, mudanças e saídas;"] },
+                    { gestor: "Mário Almeida", problemas: ["Recrutamento e seleção de candidatos a emprego deve ser profissionalizado"] },
+                    { gestor: "Tomás Mucavela", problemas: ["Contratação de trabalhadores com conduta duvidosa"] },
+                    { gestor: "Nasser Ibraimo", problemas: ["Falta de verificação de antecedentes, estado psicológico e idoneidade no acto de contratação de um trabalhador"] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR RH SAO OS SEGUINTE:",
+                    "O negocio de venda de vagas no RH esta practica e grade promotora de roubos, pois mostramos logo que o candidato entra que nao somos idoneos pois o RH ja deixo claro \"TIRA DINHERO PARA ENTRAR\", depois ele precisa recuperar o valor, qual sera a melho forma, roubando pois ele sabe que no RH todo se resolve com dinhero.",
+                    "O RH deve lancar uma politica clara de Tolerancia cero contra os roubos, e deixar claro perante todos os colegas que pessoa que roubar sera expulsa na hora.",
+                    "O RH deve implementar uma fiscalizacao mais activa na empresa, e obrigar aos gerentes que constante mente actulizem as fichas com a informacao comportamental de cada um dos seu subordinados, para assim identificarmos que tem actitudes desviante",
+                    "O RH deve implementar um programa de incentivo a quem faca denuncias de roubos o desvios de productos aqui na empresa.",
+                    "Falta de comprometimento da Gerente na Preveencao e combate aos roubos"
+                ]
+            },
+            "SEGURANÇA": {
+                gestor: "Joaquim Manuel / Victor Jô",
+                storageKey: 'seguranca_solutions_data',
+                icon: "M12 12c-2.76 0-5 2.24-5 5h10c0-2.76-2.24-5-5-5zM12 4c-2.76 0-5 2.24-5 5h10c0-2.76-2.24-5-5-5zM2 12c0 5.52 4.48 10 10 10s10-4.48 10-10S17.52 2 12 2zm0 0h20",
+                vulnerabilities: [
+                    "Falta de capacitação dos seguranças, provocando baixo desempenho dos mesmos em procedimento de atuação na cancela, nos armazéns de carregamento e a revista de todas as viaturas da instituição, dos colaboradores e visitantes;",
+                    "Baixo salário, falta de apoio moral, subsidio e o vinculo com a empresa (contrato);",
+                    "Falta de monitoramento das câmeras de vigilância em tempo real (24/24 horas);",
+                    "Falta de chefes dos postos com a missão de coordenar as actividades dos seguranças durante o turno e prestar o relatório aos seus superiores que são os supervisores",
+                    "Desatenção dos guardas em determinados períodos especialmente em horários de maior movimento",
+                    "Dificuldades no controlo de visitantes e prestadores de serviço, com falhas na identificação e registo",
+                    "Insuficiência na ronda periódica, ocasionando pontos cegos de vigilância",
+                    "Falta de capacitação contínua dos seguranças, influenciando no desenvolvimento das actividades quotidianas (O maior problema do sector)",
+                    "Falta de reestruturação organizacional no sector, comprometendo o funcionamento das actividades de segurança",
+                    "Número reduzido de seguranças para a dimensão das instalações;",
+                    "Carência de meios tecnológicos modernos (câmeras, alarmes, detectores de movimento), o que aumenta a margem de erros e reduz a eficácia das intervenções",
+                    "Ausência de iluminação adequada em áreas externas e de estacionamento;",
+                    "Falta de apoio social, moral e melhorias salariais"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Criseida De Los Santos", problemas: [
+                        "Falta de rotatividade na segurança da porta, gerando vulnerabilidades;",
+                        "Falta de rotatividade e supervisão nas câmaras de vigilância;",
+                        "Segurança informática pouco eficiente"
+                    ] },
+                    { gestor: "Zoa Suarez", problemas: ["Fraqueza na Segurança dos Armazéns e de Chaves; (Não há restrições de entrada em áreas vulneráveis (escritórios, armazens...))"] },
+                    { gestor: "Amélia Txeco", problemas: ["Produtos retirados sem controlo efetivo;", "Ausência de registos e reclamações sobre a falta de produtos roubados;"] },
+                    { gestor: "Nasser Ibraimo", problemas: ["Falta de sensores de alarme que detectam qualquer movimento estranho no portas principais do estabelecimento e dos armazéns"] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR SEGURANCA SAO OS SEGUINTES:",
+                    "Falta de equipa de seguranca, neste momento temos um grupo de pessoas a serem pagos pela empresa, mais dedicados ao roubo permanente, por eso acompanhamos que em todos os roubos que acontece nas empresas e com a participacao dos segurancas.",
+                    "Falta de postura profisional dos supervisores da area, cria espaco os seus subordinados participarem em roubos sim temor nem receio de serem suprendidos.",
+                    "Falta de monitoria e supervisao por parte dos supervisores permite que as equipas de guardas estejam mito a vontade pois sabem que os chefes estao a dormir.",
+                    "Falta de uso e implementacao das technologias disponiveis na empresa para ajudar na monitoria dos diferentes postos, como sao Cameras de vigilancia, sistema de monitoria de viaturas, sistema re radio comunicacao, sistema de gestao de Odoo, sistema de marcacao de ponto Pontual, telefone.",
+                    "Falta de um regulamento de funcion da area de seguranca que priorice a planificacao, gestao, analisis e controle, do sector para a implementacao de um programa de melhoria continua.",
+                    "Falta de comprometimento dos gestores na preveencao e combate aos roubos"
+                ]
+            },
+            "TIC's": {
+                gestor: "Jorge Ruiz",
+                storageKey: 'tics_solutions_data',
+                icon: "M13 1.07V3h6v2h-6v1.93L19 9v2h-6v1.93L19 15v2h-6v1.93l6 3.07V23H5v-1.93l6-3.07V17H5v-2h6v-1.93L5 9V7h6V5H5V3h6V1.07L4 4v16h16V4z",
+                vulnerabilities: [
+                    "Partilha de credenciais e sessões sem controlo",
+                    "Utilizadores com privilégios acima das suas funções",
+                    "Odoo usado como repositório de dados",
+                    "Ausência de KPIs e alertas automáticos",
+                    "Falta de monitoria/auditoria de ações de utilizador",
+                    "Política de palavras-passe fraca",
+                    "Falha no processo de ativação/desativação de acessos",
+                    "Inexistência de política de segurança da informação",
+                    "Ausência de directório de activos",
+                    "Segurança informática pouco eficiente"
+                ],
+                otherGestoresNotes: [],
+                dgNotes: []
+            },
+            "TRANSPORTE": {
+                gestor: "Fáuzia Ernesto",
+                storageKey: 'transporte_solutions_data',
+                icon: "M18 10h-2V6h-4v4h-2v-4H6v4H4V6h-2v6h18V6h-2v4zM20 12H2v8h18v-8zM7 16h10v-2H7v2z",
+                vulnerabilities: [
+                    "Falta de domínio do aplicativo utilizado;",
+                    "Inconsistências nas médias de consumo dos camiões em viagens às províncias com oscilações (altas, baixas e por vezes iguais ao consumo real)",
+                    "Ausência de tempo e recursos para analisar a informação gerada, o que impede a criação de planos de contenção de custos",
+                    "Sobrecarga de tarefas devido à falta de apoio",
+                    "Acesso pouco controlado às chaves",
+                    "Ausência de registos formais na chegada das viaturas",
+                    "Carência de equipamentos e espaço de trabalho"
+                ],
+                otherGestoresNotes: [
+                    { gestor: "Yadirka Bolano", problemas: [
+                        "Rotas de distribuição sem análise de distância mínima para diminuir o gasto do combustível",
+                        "Alteração de rotas (para o almoço e jantar) sem aprovação da Direção Geral;",
+                        "Distribuição de carros para entrega de comidas não controlada pela gerência de transportes possibilitando desvios;",
+                        "Falta de planeamento transparente para serviços fixos sendo o jantar o serviço de maior sensibilidade",
+                        "O sector de transportes não informa a direção de produção sobre entregas desviadas para identificar as perdas de produção"
+                    ] },
+                    { gestor: "Criseida De Los Santos", problemas: [
+                        "Uso de equipamentos de transporte fora do horário laboral sem autorização;",
+                        "Motoristas com acesso aos veículos após o término do trabalho;",
+                        "Equipamentos e veículos de transporte de mercadorias em locais inseguros e sem controlo",
+                        "Camião de lixo não supervisionado"
+                    ] }
+                ],
+                dgNotes: [
+                    "OS FACTORES QUE CONSIDERAMOS CRITICOS E PROMOTORES DE ROUBO NO SECTOR TRANSPORTES SAO OS SEGUINTES:",
+                    "Transporte: falta de Monitoria e controle sobre a nossa frota uma vez que todos os roubos acontecem com viaturas da empresa.",
+                    "roubo de combustivel, uma practica antiga sim uma politica clara de gestao e controle para mitigar e desncouragar esta practica",
+                    "Falta de metodoligia de trabalho como Planificacao, gestao, analisis, controle",
+                    "Falta de um plano de mitigacion contra roubos, desvios de routas e utilizacao das viaturas para outros fins, e roubo de combustivel.",
+                    "Falta de Comprometimento da Gerente e do Adjunto da area na preveencao e cobate aos roubos."
+                ]
+            }
+            // Adicionar mais setores aqui... (Ex: PRODUÇÃO)
+        };
+
+        let currentSector = null; // Guarda o nome do setor atualmente carregado
+        
+        // --- VARIÁVEIS COMUNS DE CONFIGURAÇÃO ---
+        const EMAIL_DESTINO = "cristina.ernesto@palace.co.mz";
+        const CC_EMAIL = "tsenga.chongo@palace.co.mz";
+        const formElement = document.getElementById('solutionForm');
+        
+        // --- Funções de Inicialização e Mudança de Setor ---
+
+        /**
+         * Preenche o seletor com os nomes dos setores disponíveis.
+         */
+        function fillSectorSelect() {
+            const select = document.getElementById('sector-select');
+            const sortedSectors = Object.keys(ALL_SECTOR_DATA).sort();
+            
+            sortedSectors.forEach(sectorName => {
+                const option = document.createElement('option');
+                option.value = sectorName;
+                option.textContent = sectorName;
+                select.appendChild(option);
+            });
+            
+            // Tenta carregar o setor da URL para permitir importação imediata
+            const urlParams = new URLSearchParams(window.location.search);
+            const sectorFromUrl = urlParams.get('sector');
+
+            if (sectorFromUrl && ALL_SECTOR_DATA[sectorFromUrl]) {
+                select.value = sectorFromUrl;
+                changeSector(sectorFromUrl);
+            }
+        }
+        
+        /**
+         * Altera o setor ativo, carrega os dados e renderiza o formulário.
+         */
+        function changeSector(sectorName = null) {
+            const selectedSectorName = sectorName || document.getElementById('sector-select').value;
+            currentSector = ALL_SECTOR_DATA[selectedSectorName];
+
+            if (!currentSector) return;
+            
+            // CORREÇÃO ESSENCIAL: Armazena o nome do setor dentro do objeto atual
+            currentSector.sectorName = selectedSectorName; 
+
+            // 1. Atualiza a UI para o setor
+            document.getElementById('sector-info').classList.remove('hidden');
+            document.getElementById('main-form-content').classList.remove('hidden');
+            document.getElementById('initial-message').classList.add('hidden');
+            
+            document.getElementById('current-sector-name').textContent = selectedSectorName;
+            document.getElementById('gestorName').value = currentSector.gestor;
+            
+            // 2. Limpa e gera o novo formulário
+            document.getElementById('vulnerabilitiesSection').innerHTML = '';
+            document.getElementById('otherGestoresSection').innerHTML = '';
+            document.getElementById('dgNotesSection').innerHTML = '';
+            document.getElementById('introNote').value = ''; // Limpa a nota introdutória
+            
+            generateFormItems();
+            loadData();
+            
+            // 3. Ajusta o URL do navegador para refletir o setor
+            const baseUrl = window.location.href.split('?')[0];
+            history.pushState(null, null, `${baseUrl}?sector=${encodeURIComponent(selectedSectorName)}`);
+        }
+
+        // --- Funções de Renderização e UI (Adaptadas) ---
+
+        /**
+         * Gera o HTML para um item do acordeão.
+         */
+        function createAccordionItem(title, key, source, sourceGestor = '') {
+            const isDG = source === 'DG';
+            const isOther = source === 'OTHER';
+            // Define a classe de cor com base na origem
+            const colorClass = isDG ? 'bg-red-50 hover:bg-red-100 text-red-800' : 
+                               isOther ? 'bg-yellow-50 hover:bg-yellow-100 text-yellow-800' :
+                                         'bg-blue-50 hover:bg-blue-100 text-blue-800';
+            
+            let placeholderText;
+            if (isDG) {
+                placeholderText = "Proposta de Solução Crítica da Direção Geral.";
+            } else if (isOther) {
+                placeholderText = `Proposta de Solução para esta vulnerabilidade (Gestor: ${sourceGestor}).`;
+            } else {
+                placeholderText = "Proposta de Solução para esta vulnerabilidade.";
+            }
+            
+            return `
+                <div class="accordion-item rounded-lg shadow-sm" data-key="${key}">
+                    <div class="accordion-header rounded-t-lg flex justify-between items-center p-4 cursor-pointer ${colorClass}">
+                        <span class="font-medium text-base">${title}</span>
+                        <div class="items-center space-x-3 flex">
+                            ${isOther ? `<span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-100 text-gray-700 transition duration-300">${sourceGestor}</span>` : ''}
+                            <span class="item-status text-xs font-semibold px-2 py-0.5 rounded-full bg-gray-200 text-gray-700 transition duration-300">Não Salvo</span>
+                            <svg class="w-4 h-4 ${colorClass.includes('red') ? 'text-red-800' : colorClass.includes('yellow') ? 'text-yellow-800' : 'text-blue-800'} icon-rotate" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </div>
+                    </div>
+                    <div class="accordion-content">
+                        <div class="accordion-content-inner">
+                            <label for="solution-${key}" class="block text-sm font-medium text-gray-700 mb-1">Proposta de Solução:</label>
+                            <textarea id="solution-${key}" data-solution-key="${key}" rows="3" class="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 print:border-none print:resize-none" placeholder="${placeholderText}" oninput="updateStatus('${key}')" onchange="saveData()"></textarea>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        /**
+         * Gera dinamicamente os itens do formulário.
+         */
+        function generateFormItems() {
+            if (!currentSector) return;
+            
+            // 1. Vulnerabilidades do Próprio Sector
+            document.getElementById('vul-gestor-name').textContent = `(${currentSector.gestor})`;
+            const vulHtml = currentSector.vulnerabilities.map((title, index) => 
+                createAccordionItem(title, `vul-${index + 1}`, 'VUL')
+            ).join('');
+            document.getElementById('vulnerabilitiesSection').innerHTML = vulHtml;
+
+            // 2. Anotações de Outros Gestores 
+            let otherGestoresHtml = '';
+            let globalIndex = 1;
+            currentSector.otherGestoresNotes.forEach(noteGroup => {
+                noteGroup.problemas.forEach(problema => {
+                    const key = `other-${globalIndex++}`;
+                    otherGestoresHtml += createAccordionItem(problema, key, 'OTHER', noteGroup.gestor);
+                });
+            });
+            
+            const otherGestoresSectionElement = document.getElementById('otherGestoresSection');
+            const otherGestoresHeader = otherGestoresSectionElement.previousElementSibling; 
+            const otherGestorNamesSpan = document.getElementById('other-gestor-names');
+            
+            if (otherGestoresHtml.length > 0) {
+                 otherGestoresSectionElement.innerHTML = otherGestoresHtml;
+                 otherGestoresSectionElement.style.display = 'block';
+                 otherGestoresHeader.style.display = 'flex';
+                 // AQUI: Concatena todos os gestores que têm notas na seção "Outros Gestores"
+                 const gestoresList = currentSector.otherGestoresNotes.map(n => n.gestor).join(', ');
+                 otherGestorNamesSpan.textContent = `(${gestoresList})`;
+            } else {
+                 otherGestoresSectionElement.innerHTML = '';
+                 otherGestoresSectionElement.style.display = 'none';
+                 otherGestoresHeader.style.display = 'none';
+            }
+
+
+            // 3. Notas Críticas da DG
+            const dgHtml = currentSector.dgNotes.map((title, index) => 
+                createAccordionItem(title, `dg-${index + 1}`, 'DG')
+            ).join('');
+            const dgSectionElement = document.getElementById('dgNotesSection');
+            const dgGestorNameSpan = document.getElementById('dg-gestor-name');
+            const dgSectionHeader = dgSectionElement.previousElementSibling; 
+
+            if (currentSector.dgNotes.length > 0) {
+                 dgSectionElement.innerHTML = dgHtml;
+                 dgSectionElement.style.display = 'block';
+                 dgSectionHeader.style.display = 'flex';
+                 // AQUI: Se a lista de DG Notes foi populada usando a lista combinada (Rafael Jimenez e Grinni Hernandez)
+                 // e já garantimos que a Amélia Txeco não está na lista de Outros Gestores.
+                 dgGestorNameSpan.textContent = '(Sr. Rafael Jimenez e Sra. Grinni Hernandez)';
+            } else {
+                 dgSectionElement.innerHTML = '';
+                 dgSectionElement.style.display = 'none';
+                 dgSectionHeader.style.display = 'none';
+            }
+            
+            initializeAccordion();
+        }
+
+        /**
+         * Atualiza o status de salvamento de um item.
+         */
+        function updateStatus(key) {
+            const item = document.querySelector(`.accordion-item[data-key="${key}"]`);
+            if (!item) return;
+
+            const statusSpan = item.querySelector('.item-status');
+            const textarea = document.getElementById(`solution-${key}`);
+            
+            if (statusSpan && textarea) {
+                if (textarea.value.trim().length > 0) {
+                    statusSpan.textContent = 'Preenchido';
+                    statusSpan.classList.remove('bg-gray-200');
+                    statusSpan.classList.add('bg-green-100', 'text-green-700');
+                } else {
+                    statusSpan.textContent = 'Não Salvo';
+                    statusSpan.classList.remove('bg-green-100', 'text-green-700');
+                    statusSpan.classList.add('bg-gray-200');
+                }
+            }
+        }
+
+        // --- Funções de Persistência de Dados ---
+
+        /**
+         * Salva todos os dados do formulário no localStorage.
+         */
+        function saveData() {
+            if (!currentSector) return;
+
+            const STORAGE_KEY = currentSector.storageKey;
+            
+            const data = {
+                introNote: document.getElementById('introNote').value,
+                gestorName: document.getElementById('gestorName').value,
+                solutions: {}
+            };
+
+            document.querySelectorAll('textarea[data-solution-key]').forEach(textarea => {
+                data.solutions[textarea.id] = textarea.value;
+            });
+
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+            
+            // Atualizar status visual de todos os campos
+            document.querySelectorAll('textarea[data-solution-key]').forEach(textarea => {
+                updateStatus(textarea.getAttribute('data-solution-key'));
+            });
+
+            // Exibir confirmação
+            const confirmation = document.getElementById('save-confirmation');
+            confirmation.classList.remove('hidden');
+            setTimeout(() => {
+                confirmation.classList.add('hidden');
+            }, 3000); // Esconde após 3 segundos
+        }
+
+        /**
+         * Função para salvar localmente e forçar o download do HTML.
+         */
+        function saveAndDownload() {
+            if (!currentSector || !currentSector.sectorName) {
+                // Notificação de erro: Nenhum setor selecionado
+                console.error("Erro: Nenhum sector selecionado para salvar e baixar.");
+                const confirmation = document.getElementById('save-confirmation');
+                confirmation.classList.remove('hidden');
+                confirmation.style.backgroundColor = 'var(--color-danger)';
+                confirmation.innerHTML = '<p class="font-bold">Erro!</p><p class="text-sm">Por favor, selecione um sector para salvar.</p>';
+                 setTimeout(() => {
+                    confirmation.classList.add('hidden');
+                    confirmation.style.backgroundColor = 'var(--color-success)';
+                    confirmation.innerHTML = '<p class="font-bold">Progresso Salvo!</p><p class="text-sm">Pode fechar e continuar mais tarde no mesmo dispositivo.</p>';
+                }, 4000);
+                return;
+            }
+            
+            // 1. Salva os dados no localStorage 
+            saveData(); 
+
+            // 2. Inicia o processo de download
+            // Clonamos o document.documentElement para manipular o HTML antes de salvá-lo
+            const clonedDocument = document.documentElement.cloneNode(true);
+            
+            // --- MARCAÇÃO CRÍTICA: Marca o documento clonado como Read Only ---
+            clonedDocument.setAttribute('data-read-only', 'true');
+            // ------------------------------------------------------------------
+            
+            // 3. Garante que os campos preenchidos sejam salvos no HTML baixado (para visualização)
+            const currentGestorName = document.getElementById('gestorName').value;
+            const currentIntroNote = document.getElementById('introNote').value;
+            const currentSectorName = currentSector.sectorName;
+
+            // Atualiza campos de entrada no documento clonado
+            const clonedGestorName = clonedDocument.querySelector('#gestorName');
+            if (clonedGestorName) {
+                 clonedGestorName.setAttribute('value', currentGestorName);
+            }
+            
+            const clonedIntroNote = clonedDocument.querySelector('#introNote');
+            if (clonedIntroNote) {
+                clonedIntroNote.textContent = currentIntroNote;
+            }
+
+            const clonedSelect = clonedDocument.querySelector('#sector-select');
+            if (clonedSelect) {
+                clonedSelect.value = currentSectorName;
+                // Garantir que a opção correta tenha o atributo 'selected' no arquivo baixado
+                Array.from(clonedSelect.options).forEach(option => {
+                    if (option.value === currentSectorName) {
+                        option.setAttribute('selected', 'selected');
+                    } else {
+                        option.removeAttribute('selected');
+                    }
+                });
+            }
+            
+            clonedDocument.querySelectorAll('textarea[data-solution-key]').forEach(originalTextarea => {
+                const clonedTextarea = clonedDocument.querySelector(`#${originalTextarea.id}`);
+                if (clonedTextarea) {
+                    // Copia o valor dinâmico para o textContent, que é o que o HTML usa para preencher textareas
+                    clonedTextarea.textContent = originalTextarea.value;
+                }
+            });
+
+
+            // Serializar o DOM clonado para string
+            const htmlContent = '<!DOCTYPE html>\n' + clonedDocument.outerHTML; 
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `FormularioFase2_${currentSector.sectorName.replace(/[^a-zA-Z0-9]/g, '')}.html`;
+            
+            // Usa setTimeout para garantir que o saveData termine de atualizar o DOM
+            // e para evitar que a confirmação de sucesso seja sobrescrita imediatamente.
+            setTimeout(() => {
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+                
+                // Exibir confirmação de sucesso de salvamento e download
+                const confirmation = document.getElementById('save-confirmation');
+                confirmation.classList.remove('hidden');
+                confirmation.style.backgroundColor = 'var(--color-save)'; // Cor para download/salvar
+                confirmation.innerHTML = '<p class="font-bold">Salvo e Baixado!</p><p class="text-sm">Progresso salvo localmente e ficheiro baixado.</p>';
+                setTimeout(() => {
+                    confirmation.classList.add('hidden');
+                }, 4000);
+            }, 50); // Pequeno atraso para garantir o fluxo de UI/Browser
+        }
+
+        /**
+         * Carrega os dados do localStorage ou da URL.
+         */
+        function loadData() {
+            if (!currentSector) return;
+            
+            let data = null;
+            const STORAGE_KEY = currentSector.storageKey;
+            const urlParams = new URLSearchParams(window.location.search);
+            const base64Data = urlParams.get('data');
+
+            if (base64Data) {
+                // Modo de Importação/Visualização (URL)
+                try {
+                    const jsonString = atob(base64Data);
+                    const importedData = JSON.parse(jsonString);
+                    
+                    // Verifica se o setor nos dados importados corresponde ao setor atual
+                    if (importedData.sectorName === document.getElementById('sector-select').value) {
+                        data = importedData;
+                        activateReadOnlyMode();
+                    } else {
+                        // Se houver conflito de setor, carrega do localStorage
+                        const storedData = localStorage.getItem(STORAGE_KEY);
+                        if (storedData) data = JSON.parse(storedData);
+                    }
+                } catch (e) {
+                    console.error("Erro ao descodificar dados Base64 da URL:", e);
+                }
+            } else {
+                // Modo Normal (localStorage)
+                const storedData = localStorage.getItem(STORAGE_KEY);
+                if (storedData) {
+                    try {
+                        data = JSON.parse(storedData);
+                    } catch (e) {
+                        console.error("Erro ao carregar dados do localStorage:", e);
+                    }
+                }
+            }
+
+            if (data) {
+                document.getElementById('introNote').value = data.introNote || '';
+                document.getElementById('gestorName').value = data.gestorName || currentSector.gestor;
+                
+                // Carregar soluções
+                if (data.solutions) {
+                    for (const id in data.solutions) {
+                        const textarea = document.getElementById(id);
+                        if (textarea) {
+                            textarea.value = data.solutions[id];
+                            const key = textarea.getAttribute('data-solution-key');
+                            updateStatus(key); // Atualizar status visual
+                        }
+                    }
+                }
+            }
+        }
+        
+        /**
+         * Define o formulário como somente leitura para dados importados.
+         */
+        function activateReadOnlyMode() {
+            document.getElementById('status-message').classList.remove('hidden');
+            
+            // Reconstroi a barra de ações apenas com o botão Imprimir
+            document.getElementById('action-bar').innerHTML = `
+                <button onclick="window.print()" class="fab-button bg-gray-700 hover:bg-gray-800">
+                    <svg class="fab-icon" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2v5H5v-5h2M12 10V3M15 7l-3-3-3 3"></path></svg>
+                    <span class="fab-tooltip">Imprimir (Exportar PDF)</span>
+                </button>
+            `;
+            
+            document.querySelectorAll('textarea').forEach(textarea => {
+                textarea.setAttribute('readonly', 'true');
+                textarea.classList.add('bg-gray-100');
+                // Remove a capacidade de expansão do acordeão
+                const item = textarea.closest('.accordion-item');
+                if (item) {
+                     item.querySelector('.accordion-header').style.cursor = 'default';
+                     // Força a abertura se houver conteúdo, para impressão/visualização
+                     const content = item.querySelector('.accordion-content');
+                     if (content) {
+                         content.style.maxHeight = content.scrollHeight + "px";
+                         content.style.overflow = 'visible';
+                     }
+                }
+            });
+            document.getElementById('gestorName').setAttribute('readonly', 'true');
+            document.getElementById('sector-select').setAttribute('disabled', 'true');
+
+            // Oculta todos os botões FAB exceto o de impressão
+            document.getElementById('action-bar').classList.add('flex', 'flex-col', 'gap-4');
+        }
+
+        // --- Inicialização ---
+
+        window.onload = function() {
+            fillSectorSelect(); // 1. Preenche o seletor com todos os setores
+            
+            // VERIFICAÇÃO DE MODO DE VISUALIZAÇÃO (Ficheiro Descarregado)
+            // Se o ficheiro foi baixado, a tag <html> terá o atributo data-read-only
+            const isDownloadedFile = document.documentElement.hasAttribute('data-read-only');
+            
+            if (isDownloadedFile) {
+                // 1. Ativa o modo ReadOnly imediatamente
+                activateReadOnlyMode();
+                
+                // 2. Força a abertura de todos os acordeões para visualização completa
+                // Pequeno atraso para garantir que a renderização do DOM esteja completa
+                setTimeout(() => {
+                    document.querySelectorAll('.accordion-item').forEach(item => {
+                        const content = item.querySelector('.accordion-content');
+                        if (content) {
+                            // Definir altura fixa para garantir que o conteúdo preenchido seja visível
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        }
+                    });
+                }, 100); 
+            }
+            // loadData() é chamado dentro de changeSector()
+        };
+        
+        // --- Funções de Acordeão (Necessário para a funcionalidade) ---
+
+        /**
+         * Inicializa o acordeão e adiciona event listeners.
+         */
+        function initializeAccordion() {
+            const isReadOnly = document.documentElement.hasAttribute('data-read-only') || new URLSearchParams(window.location.search).has('data');
+            
+            document.querySelectorAll('.accordion-header').forEach(header => {
+                // Adiciona o listener apenas se NÃO estiver no modo de leitura (Read Only)
+                if (!isReadOnly) {
+                    header.addEventListener('click', () => {
+                        const item = header.parentNode;
+                        const content = header.nextElementSibling;
+                        const isActive = item.classList.toggle('item-active');
+
+                        if (isActive) {
+                            // Abrir: Definir altura total do conteúdo interno
+                            content.style.maxHeight = content.scrollHeight + "px";
+                        } else {
+                            // Fechar
+                            content.style.maxHeight = "0";
+                        }
+                    });
+                }
+            });
+        }
+
+    </script>
+</body>
+</html>
