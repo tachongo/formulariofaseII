@@ -212,7 +212,7 @@
                 <!-- SELETOR DE SECTOR -->
                 <label for="sector-select" class="block text-sm font-medium text-gray-300 mb-2">Selecione o seu Sector:</label>
                 <div class="relative">
-                    <select id="sector-select" onchange="changeSector()" class="w-full bg-white text-gray-800 text-lg font-bold rounded-md px-4 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-yellow-400 print:hidden">
+                    <select id="sector-select" name="sector_selecionado" onchange="changeSector()" class="w-full bg-white text-gray-800 text-lg font-bold rounded-md px-4 py-2 appearance-none focus:outline-none focus:ring-2 focus:ring-yellow-400 print:hidden">
                         <option value="" disabled selected>--- Selecione um Sector ---</option>
                         <!-- Opções preenchidas por JS -->
                     </select>
@@ -223,7 +223,8 @@
                 <div id="sector-info" class="mt-4 hidden">
                     <p class="text-lg font-semibold">Sector: <span class="font-bold" id="current-sector-name"></span></p>
                     <p class="text-sm mt-1 text-gray-300">Gestor Responsável: 
-                        <input type="text" id="gestorName" value="" class="bg-white/10 border border-white/30 text-white text-sm rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-white print:border-none print:bg-transparent" readonly>
+                        <!-- Adicionado name="gestor_responsavel" -->
+                        <input type="text" id="gestorName" name="gestor_responsavel" value="" class="bg-white/10 border border-white/30 text-white text-sm rounded-md px-2 py-0.5 focus:outline-none focus:ring-1 focus:ring-white print:border-none print:bg-transparent" readonly>
                     </p>
                 </div>
             </div>
@@ -244,12 +245,14 @@
                     <h2 class="text-2xl font-semibold mb-3 text-gray-700 border-b pb-2">Nota Introdutória do Gestor</h2>
                     <div class="intro-box bg-blue-50 p-4 rounded-lg">
                         <p class="text-sm font-semibold text-gray-700 mb-2">Espaço para Análise e Contribuição:</p>
-                        <textarea id="introNote" rows="4" class="w-full p-2 border border-blue-200 rounded-md focus:ring-blue-500 focus:border-blue-500 print:border-none print:resize-none" placeholder="Escreva a sua nota introdutória aqui, abordando a visão geral das vulnerabilidades e o plano de ação proposto."></textarea>
+                        <!-- Adicionado name="nota_introdutoria" -->
+                        <textarea id="introNote" name="nota_introdutoria" rows="4" class="w-full p-2 border border-blue-200 rounded-md focus:ring-blue-500 focus:border-blue-500 print:border-none print:resize-none" placeholder="Escreva a sua nota introdutória aqui, abordando a visão geral das vulnerabilidades e o plano de ação proposto."></textarea>
                     </div>
                 </div>
 
                 <!-- Formulário de Vulnerabilidades -->
-                <form id="solutionForm">
+                <!-- Adicionado action e method para Formsspree -->
+                <form id="solutionForm" action="https://formspree.io/f/mrbeykeyg" method="POST">
                     <div class="space-y-4">
                         <!-- Secção 1: Problemas do Sector (VULNERABILIDADES) -->
                         <h2 class="text-2xl font-semibold mt-6 mb-4 text-gray-700 border-b pb-2 flex flex-col sm:flex-row sm:justify-between items-start sm:items-center">
@@ -259,6 +262,7 @@
 
                         <div id="vulnerabilitiesSection" class="space-y-2">
                             <!-- Os itens do acordeão serão gerados aqui -->
+                            <!-- Os textareas gerados em JS terão que ter um name único, como "solution_vul-1" -->
                         </div>
                     
                         <!-- Secção 2: Anotações de Outros Gestores -->
@@ -281,6 +285,9 @@
                             <!-- Os itens do acordeão serão gerados aqui -->
                         </div>
                     </div>
+
+                    <!-- Botão de submissão real (escondido, pois usamos o FAB) -->
+                    <button type="submit" id="formsspree-submit-button" class="hidden">Submit</button>
                 </form>
             </div>
             <div id="initial-message" class="p-6 text-center text-gray-500">
@@ -1035,7 +1042,8 @@
                     <div class="accordion-content">
                         <div class="accordion-content-inner">
                             <label for="solution-${key}" class="block text-sm font-medium text-gray-700 mb-1">Proposta de Solução:</label>
-                            <textarea id="solution-${key}" data-solution-key="${key}" rows="3" class="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 print:border-none print:resize-none" placeholder="${placeholderText}" oninput="updateStatus('${key}')" onchange="saveData()"></textarea>
+                            <!-- Adicionado name com prefixo para formsspree -->
+                            <textarea id="solution-${key}" name="solution_${key}" data-solution-key="${key}" rows="3" class="w-full p-3 border border-gray-300 rounded-md focus:ring-indigo-500 focus:border-indigo-500 print:border-none print:resize-none" placeholder="${placeholderText}" oninput="updateStatus('${key}')" onchange="saveData()"></textarea>
                         </div>
                     </div>
                 </div>
